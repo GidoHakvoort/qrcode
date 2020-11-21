@@ -1,0 +1,6 @@
+qrcode
+pillow
+flask
+marshmallow
+flask_restful
+gunicorn
