@@ -4,3 +4,4 @@ flask
 marshmallow
 flask_restful
 gunicorn
+requests
