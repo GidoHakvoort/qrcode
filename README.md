@@ -62,6 +62,7 @@ To run the Docker image, run the following:
 ```
 docker run -d --name qrcode -p 3000:3000 qrcode
 ```
+
 You should be able to access the API at http://localhost:3000/qrcode.
 
 To stop the Docker container, simply run:
@@ -69,6 +70,8 @@ To stop the Docker container, simply run:
 ```
 docker stop qrcode
 ```
+
+In addition to cloning the project repository you can also pull the docker image from [Docker Hub](https://hub.docker.com/r/ghakvoort/qrcode-generator).
 
 ## Generating QR Codes
 
@@ -81,6 +84,7 @@ Root URL: [http://localhost:3000/qrcode?](http://localhost:3000/qrcode?)
 The request support the following URL query parameters:
 
 **Required**
+
 | Parameter | Type |  Description |
 | --------- | ---- |  ----------- |
 | data | String | The data to be encode. |
