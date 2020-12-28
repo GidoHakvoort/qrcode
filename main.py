@@ -144,4 +144,4 @@ api = Api(app, errors=errors)
 api.add_resource(QRCodeAPI, '/qrcode', endpoint='qrcode')
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", debug=False)
+    app.run(host="0.0.0.0", port=3000, debug=False)
