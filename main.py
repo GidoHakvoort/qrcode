@@ -1,15 +1,23 @@
+"""
+Simple REST API server for generating QR Codes
+"""
+
+import base64
+
+from io import BytesIO
 from flask import Flask, send_file, request
 from flask_restful import Resource, Api, abort
 from marshmallow import Schema, fields, ValidationError, validate
-
-import base64
-import qrcode
-import requests
-from io import BytesIO
 from PIL import Image
+
+import requests
+import qrcode
 
 # Class te generate QR Codes
 class QRCodeGenerator:
+    """
+    Class to generage QR Codes
+    """
 
     correction_levels = {
         "L": qrcode.constants.ERROR_CORRECT_L,
@@ -18,7 +26,7 @@ class QRCodeGenerator:
         "H": qrcode.constants.ERROR_CORRECT_H,
     }
 
-    def __init__(self, data, version=None, error_correction='M', box_size=10, border=4, logo=None, logo_size=7, fit=True, mode='raw'): 
+    def __init__(self, data, version=None, error_correction='M', box_size=10, border=4, logo=None, logo_size=7, fit=True, mode='raw'):
         self.data = data
         self.version = version
         self.error_correction = error_correction
@@ -30,13 +38,17 @@ class QRCodeGenerator:
         self.mode = mode
 
     def generate(self):
+        """
+        Generate a QR Code. In case a logo if provided paste it in the center
+        """
+
         qr = qrcode.QRCode(
             version=self.version,
             error_correction=self.correction_levels[self.error_correction],
             box_size=self.box_size,
             border=self.border,
         )
-    
+
         qr.add_data(self.data)
         qr.make(fit=self.fit)
 
@@ -57,19 +69,23 @@ class QRCodeGenerator:
             logo = logo.resize((self.logo_size * self.box_size, self.logo_size *self.box_size))
 
             # past logo in center of QR code
-            qr_img.paste(logo, ((qr_img.size[0] - logo.size[0]) // 2, (qr_img.size[1] - logo.size[1]) // 2))
-                
+            position = ((qr_img.size[0] - logo.size[0]) // 2, (qr_img.size[1] - logo.size[1]) // 2)
+            qr_img.paste(logo, position)
 
         qr_img.save(out, "PNG")
         out.seek(0)
 
         if self.mode == "base64":
             return u"data:image/png;base64," + base64.b64encode(out.getvalue()).decode("ascii")
-        elif self.mode == "raw":
-            return out
+
+        return out
 
 # Schema for request data
 class QRCodeSchema(Schema):
+    """
+    The QR Code RESTful parameter schema
+    """
+
     data = fields.Str(required=True)
     version = fields.Int(missing=None, validate=validate.Range(min=1, max=40))
     error = fields.Str(missing='M', validate=validate.OneOf(QRCodeGenerator.correction_levels.keys()))
@@ -81,13 +97,20 @@ class QRCodeSchema(Schema):
 
 # QRCode resource
 class QRCodeAPI(Resource):
+    """
+    The QR Code RESTful resource
+    """
+
     def get(self):
+        """
+        Endpoint for QR Code API.
+        """
         try:
             result = QRCodeSchema().load(request.args)
 
             # create QR generator
             qr_generator = QRCodeGenerator(
-                data=result['data'], 
+                data=result['data'],
                 version=result['version'],
                 error_correction=result['error'],
                 box_size=result['box_size'],
@@ -97,16 +120,17 @@ class QRCodeAPI(Resource):
 
             # get the QR image
             image = qr_generator.generate()
-            
+
             return send_file(image, mimetype="image/png")
 
         except ValidationError as err:
-            abort(str(err.messages))
+            return abort(str(err.messages))
+
         except requests.RequestException as err:
-            abort("{{'logo':['{}']}}".format(str(err)))
+            return abort("{{'logo':['{}']}}".format(str(err)))
 
 # create Flask application and api
-errors={
+errors = {
         'InternalServerError': {
         'status': 500,
         'message': 'Internal Server Error'
@@ -116,8 +140,8 @@ errors={
 app = Flask(__name__)
 api = Api(app, errors=errors)
 
-# add resource for qr code generation
+# add resource for QR Code generation
 api.add_resource(QRCodeAPI, '/qrcode', endpoint='qrcode')
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", debug=True)
+    app.run(host="0.0.0.0", debug=False)
