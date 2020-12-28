@@ -97,10 +97,12 @@ The request support the following URL query parameters:
 | logo_size | Integer | 7 | The size of the logo in squares. Possible values range from 3 to 11.|
 
 **Example**
+
+You can generate a QR Code and save it as a `.png` with the following command. 
+
 ```
 curl http://localhost:3000/qrcode?data=Hello%20World > qrcode.png
 ```
-
 
 ## License
 This project uses an [MIT License](https://github.com/GidoHakvoort/qrcode/blob/master/LICENSE).
