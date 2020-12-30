@@ -3,15 +3,13 @@ type: docker
 name: default
 
 steps:
-- name: build
-  image: docker:dind
-  volumes:
-  - name: dockersock
-    path: /var/run/docker.sock
-  commands:
-    - docker build .
-
-volumes:
-- name: dockersock
-  host:
-    path: /var/run/docker.sock
+- name: docker  
+  image: plugins/docker
+  settings:
+    username:
+      from_secret: docker_username
+    password:
+      from_secret: docker_password
+    repo: ghakvoort/qrcode-generator
+    tags: latest
+    dry_run: true
